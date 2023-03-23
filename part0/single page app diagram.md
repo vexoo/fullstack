@@ -19,7 +19,7 @@ sequenceDiagram
     server-->>browser: JavaScript file
     deactivate server
 
-    note over browser: browser starts executing JavaScript code, which requests raw data (.json file) from server
+    note over browser: browser starts executing JavaScript code,<br> which requests raw data (.json file) from server
 
     browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/data.json
     activate server
