@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import personService from '../services/persons'
 
-const PersonForm = ({ persons, setPersons }) => {
+const PersonForm = ({ persons, setPersons, setErrorMessage, setErrorColor }) => {
     const [newName, setNewName] = useState('')
     const [newNumber, setNewNumber] = useState('')
 
@@ -9,7 +9,12 @@ const PersonForm = ({ persons, setPersons }) => {
         event.preventDefault()
 
         if (newName.trim() === '') {
-            alert('Name can not be empty')
+            setErrorColor('red')
+            setErrorMessage('Name can not be empty')
+            setTimeout(() => {
+                setErrorMessage(null)
+                setErrorColor('green')
+            }, 5000)
             return
         }
 
@@ -17,7 +22,12 @@ const PersonForm = ({ persons, setPersons }) => {
             person.name.toLowerCase() === newName.toLowerCase())
 
         if (currentPerson && currentPerson.number === newNumber) {
-            alert(`${newName} is already added to phonebook`)
+            setErrorColor('red')
+            setErrorMessage(`${newName} is already added to phonebook`)
+            setTimeout(() => {
+                setErrorMessage(null)
+                setErrorColor('green')
+            }, 5000)
             setNewName('')
             setNewNumber('')
             return
@@ -30,13 +40,24 @@ const PersonForm = ({ persons, setPersons }) => {
                     .update(currentPerson.id, updatedPerson)
                     .then((updatedPerson) => {
                         setPersons(
-                            persons.map((person) =>
+                            persons.map(person =>
                                 person.id === updatedPerson.id ? updatedPerson : person
                             )
                         )
+                        setErrorMessage(`Changed the phone number of ${newName}`)
+                        setTimeout(() => { setErrorMessage(null) }, 5000)
                         setNewName('')
                         setNewNumber('')
                         return
+                    })
+                    .catch(error => {
+                        setErrorColor('red')
+                        setErrorMessage(`Information of ${currentPerson.name} has already been removed from server`)
+                        setTimeout(() => {
+                            setErrorMessage(null)
+                            setErrorColor('green')
+                        }, 5000)
+                        setPersons(persons.filter(person => person.id !== currentPerson.id))
                     })
             }
         } else {
@@ -46,6 +67,8 @@ const PersonForm = ({ persons, setPersons }) => {
                 .create(personObject)
                 .then((response) => {
                     setPersons(persons.concat(response))
+                    setErrorMessage(`Added ${newName}`)
+                    setTimeout(() => { setErrorMessage(null) }, 5000)
                     setNewName('')
                     setNewNumber('')
                     return
