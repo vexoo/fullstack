@@ -71,10 +71,10 @@ app.put("/api/persons/:id", (request, response, next) => {
 
     Person.findByIdAndUpdate(request.params.id, person, { new: true })
         .then((updatedPerson) => {
-            response.json(updatedPerson);
+            response.json(updatedPerson)
         })
-        .catch((error) => next(error));
-});
+        .catch((error) => next(error))
+})
 
 app.delete('/api/persons/:id', (request, response, next) => {
     Person.findByIdAndRemove(request.params.id)
@@ -86,10 +86,10 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 
 const unknownEndpoint = (request, response) => {
-    response.status(404).send({ error: "unknown endpoint" });
-};
+    response.status(404).send({ error: "unknown endpoint" })
+}
 
-app.use(unknownEndpoint);
+app.use(unknownEndpoint)
 
 const errorHandler = (error, request, response, next) => {
     console.error(error.message)
