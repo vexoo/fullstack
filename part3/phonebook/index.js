@@ -30,7 +30,7 @@ app.get('/api/info', (request, response) => {
 
     Person.find({}).then(persons => {
         response.send(`Phonebook has info for ${persons.length} people
-        <br><br>${currentTime}`
+        <br><br>${currentTime}`)
     })
 })
 
