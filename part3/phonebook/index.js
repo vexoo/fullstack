@@ -27,10 +27,11 @@ app.get('/api/persons', (request, response) => {
 
 app.get('/api/info', (request, response) => {
     const currentTime = new Date().toString()
-    //response.send(`<p>Phonebook has info for ${persons.length} people</p>
-    //<p>Current time is ${currentTime}</p>`)
-    response.send(`Phonebook has info for ${persons.length} people<br><br>
-    Current time is ${currentTime}`)
+
+    Person.find({}).then(persons => {
+        response.send(`Phonebook has info for ${persons.length} people
+        <br><br>${currentTime}`
+    })
 })
 
 app.get('/api/persons/:id', (request, response) => {
@@ -38,12 +39,6 @@ app.get('/api/persons/:id', (request, response) => {
         response.json(person)
     })
 })
-
-const generateId = () => {
-    const randomId = Math.floor(Math.random() * 1000000)
-    //console.log(randomId)
-    return randomId
-}
 
 app.post('/api/persons', (request, response) => {
     const body = request.body
