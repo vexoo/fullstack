@@ -53,6 +53,8 @@ const PersonForm = ({ persons, setPersons, setErrorMessage, setErrorColor }) => 
                 .then((response) => {
                     setPersons(persons.concat(response))
                     displayMessage(`Added ${newName}`, false, setErrorMessage, setErrorColor)
+                    setNewName('')
+                    setNewNumber('')
                     return
                 })
                 .catch(error => {
