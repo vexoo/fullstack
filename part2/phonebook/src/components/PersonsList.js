@@ -1,4 +1,5 @@
 import personService from '../services/persons'
+import { displayMessage } from './Notification'
 
 const PersonsList = ({ personsList, persons, setPersons, setErrorMessage, setErrorColor }) => {
 
@@ -7,17 +8,11 @@ const PersonsList = ({ personsList, persons, setPersons, setErrorMessage, setErr
             personService
                 .remove(personToBeDeleted.id)
                 .then(() => {
-                    setErrorMessage(`Removed information of ${personToBeDeleted.name}`)
                     setPersons(persons.filter(person => person.id !== personToBeDeleted.id))
-                    setTimeout(() => { setErrorMessage(null) }, 5000)
+                    displayMessage(`Removed information of ${personToBeDeleted.name}`, false, setErrorMessage, setErrorColor)
                 })
                 .catch(error => {
-                    setErrorColor('red')
-                    setErrorMessage(`Information of ${personToBeDeleted.name} could not be removed`)
-                    setTimeout(() => {
-                        setErrorMessage(null)
-                        setErrorColor('green')
-                    }, 5000)
+                    displayMessage(`Information of ${personToBeDeleted.name} could not be removed`, true, setErrorMessage, setErrorColor)
                     personService
                     .getAll()
                     .then(initialPersons => {
