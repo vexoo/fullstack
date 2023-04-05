@@ -9,8 +9,8 @@ app.use(express.static('build'))
 app.use(express.json())
 app.use(cors())
 
-morgan.token("req-body", (request) => {
-    return request.method === "POST" ? JSON.stringify(request.body) : " "
+morgan.token('req-body', (request) => {
+    return request.method === 'POST' ? JSON.stringify(request.body) : ' '
 })
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :req-body'))
@@ -43,13 +43,6 @@ app.get('/api/persons/:id', (request, response, next) => {
 
 app.post('/api/persons', (request, response, next) => {
     const body = request.body
-    //console.log(body)
-
-    /* if (!body.name || !body.number) {
-        return response.status(400).json({
-            error: 'missing name or number'
-        })
-    } */
 
     const person = new Person({
         name: body.name,
@@ -61,20 +54,7 @@ app.post('/api/persons', (request, response, next) => {
     }).catch((error) => next(error))
 })
 
-app.put("/api/persons/:id", (request, response, next) => {
-    /* const body = request.body
- 
-     const person = {
-         name: body.name,
-         number: body.number,
-     } 
-
-    Person.findByIdAndUpdate(request.params.id, person, { new: true })
-        .then((updatedPerson) => {
-            response.json(updatedPerson)
-        })
-        .catch((error) => next(error)) */
-
+app.put('/api/persons/:id', (request, response, next) => {
     const { name, number } = request.body
 
     Person.findByIdAndUpdate(request.params.id,
@@ -88,7 +68,7 @@ app.put("/api/persons/:id", (request, response, next) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
     Person.findByIdAndRemove(request.params.id)
-        .then(result => {
+        .then(() => {
             response.status(204).end()
         })
         .catch(error => next(error))
@@ -96,7 +76,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 
 const unknownEndpoint = (request, response) => {
-    response.status(404).send({ error: "unknown endpoint" })
+    response.status(404).send({ error: 'unknown endpoint' })
 }
 
 app.use(unknownEndpoint)
