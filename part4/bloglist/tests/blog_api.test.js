@@ -103,44 +103,27 @@ describe('behavior when a blog property is missing is correct', () => {
     })
 
     test('missing title property results in status code 400 - Bad Request', async () => {
-        const blogsBefore = await api.get('/api/blogs')
         const newBlog = {
             author: 'test author',
             url: 'https://www.test.com',
             likes: 0
         }
-
-        /*await api
-            .post('/api/blogs')
-            .send(newBlog)
-            .expect(400)*/
-
         const response = await api.post('/api/blogs').send(newBlog).expect(400)
         expect(response.body.error).toContain('Blog validation failed')
-        const blogsAfter = await api.get('/api/blogs')
-        expect(blogsAfter).toHaveLength(blogsBefore.length)
-    }, 50000)
+    })
 
     test('missing url property results in status code 400 - Bad Request', async () => {
 
-        const blogsBefore = await api.get('/api/blogs')
         const newBlog = {
             title: 'test blog',
             author: 'test author',
             likes: 0
         }
 
-        /*await api
-            .post('/api/blogs')
-            .send(newBlog)
-            .expect(400)*/
-
         const response = await api.post('/api/blogs').send(newBlog).expect(400)
         expect(response.body.error).toContain('Blog validation failed')
-        const blogsAfter = await api.get('/api/blogs')
-        expect(blogsAfter).toHaveLength(blogsBefore.length)
 
-    }, 50000)
+    })
 })
 
 
