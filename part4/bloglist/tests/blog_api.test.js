@@ -98,17 +98,6 @@ describe('tests for blog addition', () => {
     })
 
     test('adding a blog does not work without a valid token', async () => {
-        /*let mockToken
-        await api
-            .post('/api/users')
-            .send(initialUsers[1])
-        await api
-            .post('/api/login')
-            .send({
-                username: initialUsers[1].username,
-                password: initialUsers[1].password
-            })
-            .expect(response => { mockToken = response.body.token })*/
 
         const newBlog = {
             title: 'test blog',
@@ -116,11 +105,6 @@ describe('tests for blog addition', () => {
             url: "https://www.test.com",
             likes: 0
         }
-        /* await api
-             .post('/api/blogs')
-             //.set('Authorization', `Bearer ${mockToken}`)
-             .send(newBlog)
-             .expect(401) */
 
         await api
             .post('/api/blogs')
@@ -176,7 +160,11 @@ describe('behavior when a blog property is missing is correct', () => {
             url: 'https://www.test.com',
             likes: 0
         }
-        const response = await api.post('/api/blogs').send(newBlog).expect(400)
+        const response = await api
+            .post('/api/blogs')
+            .set('Authorization', `Bearer ${token}`)
+            .send(newBlog)
+            .expect(400)
         expect(response.body.error).toContain('Blog validation failed')
     })
 
@@ -188,7 +176,11 @@ describe('behavior when a blog property is missing is correct', () => {
             likes: 0
         }
 
-        const response = await api.post('/api/blogs').send(newBlog).expect(400)
+        const response = await api
+            .post('/api/blogs')
+            .set('Authorization', `Bearer ${token}`)
+            .send(newBlog)
+            .expect(400)
         expect(response.body.error).toContain('Blog validation failed')
 
     })
