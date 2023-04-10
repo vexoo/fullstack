@@ -1,3 +1,15 @@
+const initialUsers = [
+    {
+        username: 'mluukkai',
+        name: 'Matti Luukkainen',
+        password: 'mattil'
+    },
+    {
+        username: 'root',
+        password: 'password'
+    }
+]
+
 const listWithZeroBlogs = []
 
 const listWithOneBlog = [
@@ -64,6 +76,7 @@ const listWithManyBlogs = [
 
 
 module.exports = {
+    initialUsers,
     listWithZeroBlogs,
     listWithOneBlog,
     listWithManyBlogs

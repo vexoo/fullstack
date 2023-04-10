@@ -1,9 +1,6 @@
-//import { useState } from 'react'
-
 const supertest = require('supertest')
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
-const jwt = require("jsonwebtoken")
 
 const testHelper = require('./test_helper')
 const app = require('../app')
@@ -12,14 +9,36 @@ const api = supertest(app)
 const User = require('../models/user')
 const Blog = require("../models/blog")
 
-
-
-
-const { listWithManyBlogs } = require('./blogList_helper')
+const { initialUsers, listWithManyBlogs } = require('./blogList_helper')
+let token
 
 beforeEach(async () => {
+    await User.deleteMany({})
+
+    await api
+        .post('/api/users')
+        .send(initialUsers[0])
+
+    await api
+        .post('/api/login')
+        .send({
+            username: initialUsers[0].username,
+            password: initialUsers[0].password
+        })
+        .expect(response => { token = response.body.token })
+
+
     await Blog.deleteMany({})
-    await Blog.insertMany(listWithManyBlogs)
+
+    await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(listWithManyBlogs[0])
+
+    await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(listWithManyBlogs[1])
 })
 
 describe('when there is initially some blogs saved', () => {
@@ -38,8 +57,8 @@ describe('when there is initially some blogs saved', () => {
     })
     test('updating properties of a blog works', async () => {
 
-        const blogs = await api.get('/api/blogs')
-        const blogToUpdate = blogs.body[0]
+        const blogs = await testHelper.blogsInDb()
+        const blogToUpdate = blogs[0]
 
         await api
             .put(`/api/blogs/${blogToUpdate.id}`)
@@ -54,22 +73,10 @@ describe('when there is initially some blogs saved', () => {
 
 
 
-describe('tests for blog addition/deletion', () => {
-    //token, setToken] = useState('')
-    let token = null
-
-    beforeAll(async () => {
-        const passwordHash = await bcrypt.hash('salasana', 10)
-        const user = new User({ username: 'username', passwordHash })
-        await user.save()
-
-        const userToken = { username: 'username', id: user.id }
-        token = jwt.sign(userToken, process.env.SECRET)
-        return token
-    })
+describe('tests for blog addition', () => {
 
     test('adding a blog works', async () => {
-        const blogsBefore = await api.get('/api/blogs')
+        const blogsBefore = await testHelper.blogsInDb()
 
         const newBlog = {
             title: 'test blog',
@@ -86,8 +93,39 @@ describe('tests for blog addition/deletion', () => {
 
         const response = await api.get('/api/blogs')
 
-        expect(response.body.length).toBe(blogsBefore.body.length + 1)
+        expect(response.body.length).toBe(blogsBefore.length + 1)
         expect(response.body.map(blog => blog.title)).toContainEqual('test blog')
+    })
+
+    test('adding a blog does not work without a valid token', async () => {
+        /*let mockToken
+        await api
+            .post('/api/users')
+            .send(initialUsers[1])
+        await api
+            .post('/api/login')
+            .send({
+                username: initialUsers[1].username,
+                password: initialUsers[1].password
+            })
+            .expect(response => { mockToken = response.body.token })*/
+
+        const newBlog = {
+            title: 'test blog',
+            author: 'test author',
+            url: "https://www.test.com",
+            likes: 0
+        }
+        /* await api
+             .post('/api/blogs')
+             //.set('Authorization', `Bearer ${mockToken}`)
+             .send(newBlog)
+             .expect(401) */
+
+        await api
+            .post('/api/blogs')
+            .send(newBlog)
+            .expect(401)
     })
 
     test('missing likes property defaults to 0', async () => {
@@ -108,33 +146,22 @@ describe('tests for blog addition/deletion', () => {
         expect(addedBlog.likes).toBe(0)
     })
 
+
+})
+
+describe('tests for blog deletion', () => {
     test('deleting a blog works', async () => {
-
-        const newBlog = {
-            title: 'test blog',
-            author: 'test author',
-            url: "https://www.test.com",
-            likes: 0
-        }
-        await api
-            .post("/api/blogs")
-            .set("Authorization", `Bearer ${token}`)
-            .send(newBlog)
-            .expect(201)
-
-        const blogs = await Blog.find({}).populate('user')
-        console.log(blogs)
-        const blogToDelete = blogs[0]
-        console.log(blogToDelete)
+        const blogsBefore = await testHelper.blogsInDb()
+        const blogToDelete = blogsBefore[0]
 
         await api
             .delete(`/api/blogs/${blogToDelete.id}`)
-            .set("Authorization", `Bearer ${token}`)
+            .set('Authorization', `Bearer ${token}`)
             .expect(204)
 
-        const blogsAfter = await Blog.find({}).populate('user')
-        const blogIds = blogsAfter.body.map(blog => blog.id)
-        expect(blogIds).not.toContainEqual(blogToDelete.id)
+
+        const blogsAfter = await testHelper.blogsInDb()
+        expect(blogsAfter).toHaveLength(blogsBefore.length - 1)
     })
 })
 
@@ -201,7 +228,6 @@ describe('when there is initially one user at db', () => {
 
     test('creation fails with an invalid username', async () => {
         const usersAtStart = await testHelper.usersInDb()
-        console.log(usersAtStart);
 
         const newUser = {
             username: 'ml',
@@ -215,7 +241,6 @@ describe('when there is initially one user at db', () => {
             .expect(400)
 
         const usersAtEnd = await testHelper.usersInDb()
-        console.log(usersAtEnd);
         expect(usersAtEnd).toHaveLength(usersAtStart.length)
 
         const usernames = usersAtEnd.map(u => u.username)
