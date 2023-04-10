@@ -1,12 +1,14 @@
-const mongoose = require('mongoose')
 const supertest = require('supertest')
+const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
-const app = require('../app')
-const Blog = require("../models/blog")
-const User = require('../models/user')
-const testHelper = require('./test_helper')
 
+const testHelper = require('./test_helper')
+const app = require('../app')
 const api = supertest(app)
+
+const User = require('../models/user')
+const Blog = require("../models/blog")
+
 
 const { listWithManyBlogs } = require('./blogList_helper')
 
@@ -29,20 +31,6 @@ describe('when there is initially some blogs saved', () => {
 
         idArray.forEach(id => expect(id).toBeDefined())
     })
-    test('deleting a blog works', async () => {
-
-        const blogs = await api.get('/api/blogs')
-        const blogToDelete = blogs.body[0]
-
-        await api
-            .delete(`/api/blogs/${blogToDelete.id}`)
-            .expect(204)
-
-        const blogsAfter = await api.get('/api/blogs')
-        const blogIds = blogsAfter.body.map(blog => blog.id)
-        expect(blogIds).not.toContainEqual(blogToDelete.id)
-    })
-
     test('updating properties of a blog works', async () => {
 
         const blogs = await api.get('/api/blogs')
@@ -61,26 +49,52 @@ describe('when there is initially some blogs saved', () => {
 
 
 
+describe('tests for blog addition/deletion', () => {
+    const [token, setToken] = null
+    
+    beforeAll(async () => {
+        const passwordHash = await bcrypt.hash('salasana', 10)
+        const user = await new User({ username: 'username', passwordHash }).save()
 
-test('adding a blog works', async () => {
-    const blogsBefore = await api.get('/api/blogs')
+        const userToken = { username: username, id: user.id }
+        setToken(jwt.sign(userToken, process.env.SECRET))
+        return token
+    })
+    
+    test('adding a blog works', async () => {
+        const blogsBefore = await api.get('/api/blogs')
 
-    const newBlog = {
-        title: 'test blog',
-        author: 'test author',
-        url: "https://www.test.com",
-        likes: 0
-    }
+        const newBlog = {
+            title: 'test blog',
+            author: 'test author',
+            url: "https://www.test.com",
+            likes: 0
+        }
 
-    await api
-        .post('/api/blogs')
-        .send(newBlog)
-        .expect(201)
+        await api
+            .post('/api/blogs')
+            .set('Authorization', `Bearer ${token}`)
+            .send(newBlog)
+            .expect(201)
 
-    const response = await api.get('/api/blogs')
+        const response = await api.get('/api/blogs')
 
-    expect(response.body.length).toBe(blogsBefore.body.length + 1)
-    expect(response.body.map(blog => blog.title)).toContainEqual('test blog')
+        expect(response.body.length).toBe(blogsBefore.body.length + 1)
+        expect(response.body.map(blog => blog.title)).toContainEqual('test blog')
+    })
+    test('deleting a blog works', async () => {
+
+        const blogs = await api.get('/api/blogs')
+        const blogToDelete = blogs.body[0]
+
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .expect(204)
+
+        const blogsAfter = await api.get('/api/blogs')
+        const blogIds = blogsAfter.body.map(blog => blog.id)
+        expect(blogIds).not.toContainEqual(blogToDelete.id)
+    })
 })
 
 
@@ -131,13 +145,13 @@ describe('when there is initially one user at db', () => {
     beforeEach(async () => {
         await User.deleteMany({})
 
-        const passwordHash = await bcrypt.hash('sekret', 10)
+        const passwordHash = await bcrypt.hash('password', 10)
         const user = new User({ username: 'root', passwordHash })
 
         await user.save()
     })
 
-    test('creation succeeds with a fresh username', async () => {
+    test('creation succeeds with a valid username', async () => {
         const usersAtStart = await testHelper.usersInDb()
 
         const newUser = {
@@ -157,6 +171,29 @@ describe('when there is initially one user at db', () => {
 
         const usernames = usersAtEnd.map(u => u.username)
         expect(usernames).toContain(newUser.username)
+    })
+
+    test('creation fails with an invalid username', async () => {
+        const usersAtStart = await testHelper.usersInDb()
+        console.log(usersAtStart);
+
+        const newUser = {
+            username: 'ml',
+            name: 'Matti Luukkainen',
+            password: 'salainen',
+        }
+
+        await api
+            .post('/api/users')
+            .send(newUser)
+            .expect(400)
+
+        const usersAtEnd = await testHelper.usersInDb()
+        console.log(usersAtEnd);
+        expect(usersAtEnd).toHaveLength(usersAtStart.length)
+
+        const usernames = usersAtEnd.map(u => u.username)
+        expect(usernames).not.toContain(newUser.username)
     })
 })
 
