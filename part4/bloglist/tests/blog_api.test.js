@@ -137,7 +137,6 @@ describe('tests for blog deletion', () => {
     test('deleting a blog works', async () => {
         const blogsBefore = await testHelper.blogsInDb()
         const blogToDelete = blogsBefore[0]
-
         await api
             .delete(`/api/blogs/${blogToDelete.id}`)
             .set('Authorization', `Bearer ${token}`)
@@ -146,6 +145,19 @@ describe('tests for blog deletion', () => {
 
         const blogsAfter = await testHelper.blogsInDb()
         expect(blogsAfter).toHaveLength(blogsBefore.length - 1)
+    })
+
+    test('deleting a blog without a token does not work', async () => {
+        const blogsBefore = await testHelper.blogsInDb()
+        const blogToDelete = blogsBefore[0]
+
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .expect(401)
+
+        const blogsAfter = await testHelper.blogsInDb()
+        console.log(blogsAfter);
+        expect(blogsAfter).toHaveLength(blogsBefore.length)
     })
 })
 
