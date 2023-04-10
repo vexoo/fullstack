@@ -1,6 +1,9 @@
+//import { useState } from 'react'
+
 const supertest = require('supertest')
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
+const jwt = require("jsonwebtoken")
 
 const testHelper = require('./test_helper')
 const app = require('../app')
@@ -8,6 +11,8 @@ const api = supertest(app)
 
 const User = require('../models/user')
 const Blog = require("../models/blog")
+
+
 
 
 const { listWithManyBlogs } = require('./blogList_helper')
@@ -50,17 +55,19 @@ describe('when there is initially some blogs saved', () => {
 
 
 describe('tests for blog addition/deletion', () => {
-    const [token, setToken] = null
-    
+    //token, setToken] = useState('')
+    let token = null
+
     beforeAll(async () => {
         const passwordHash = await bcrypt.hash('salasana', 10)
-        const user = await new User({ username: 'username', passwordHash }).save()
+        const user = new User({ username: 'username', passwordHash })
+        await user.save()
 
-        const userToken = { username: username, id: user.id }
-        setToken(jwt.sign(userToken, process.env.SECRET))
+        const userToken = { username: 'username', id: user.id }
+        token = jwt.sign(userToken, process.env.SECRET)
         return token
     })
-    
+
     test('adding a blog works', async () => {
         const blogsBefore = await api.get('/api/blogs')
 
@@ -82,23 +89,6 @@ describe('tests for blog addition/deletion', () => {
         expect(response.body.length).toBe(blogsBefore.body.length + 1)
         expect(response.body.map(blog => blog.title)).toContainEqual('test blog')
     })
-    test('deleting a blog works', async () => {
-
-        const blogs = await api.get('/api/blogs')
-        const blogToDelete = blogs.body[0]
-
-        await api
-            .delete(`/api/blogs/${blogToDelete.id}`)
-            .expect(204)
-
-        const blogsAfter = await api.get('/api/blogs')
-        const blogIds = blogsAfter.body.map(blog => blog.id)
-        expect(blogIds).not.toContainEqual(blogToDelete.id)
-    })
-})
-
-
-describe('behavior when a blog property is missing is correct', () => {
 
     test('missing likes property defaults to 0', async () => {
         const newBlog = {
@@ -109,6 +99,7 @@ describe('behavior when a blog property is missing is correct', () => {
 
         await api
             .post('/api/blogs')
+            .set("Authorization", `Bearer ${token}`)
             .send(newBlog)
             .expect(201)
 
@@ -116,6 +107,41 @@ describe('behavior when a blog property is missing is correct', () => {
         const addedBlog = response.body.find(blog => blog.title === 'test blog')
         expect(addedBlog.likes).toBe(0)
     })
+
+    test('deleting a blog works', async () => {
+
+        const newBlog = {
+            title: 'test blog',
+            author: 'test author',
+            url: "https://www.test.com",
+            likes: 0
+        }
+        await api
+            .post("/api/blogs")
+            .set("Authorization", `Bearer ${token}`)
+            .send(newBlog)
+            .expect(201)
+
+        const blogs = await Blog.find({}).populate('user')
+        console.log(blogs)
+        const blogToDelete = blogs[0]
+        console.log(blogToDelete)
+
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .set("Authorization", `Bearer ${token}`)
+            .expect(204)
+
+        const blogsAfter = await Blog.find({}).populate('user')
+        const blogIds = blogsAfter.body.map(blog => blog.id)
+        expect(blogIds).not.toContainEqual(blogToDelete.id)
+    })
+})
+
+
+describe('behavior when a blog property is missing is correct', () => {
+
+
 
     test('missing title property results in status code 400 - Bad Request', async () => {
         const newBlog = {
