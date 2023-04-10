@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require("../models/blog")
+const testHelper = require('./test_helper')
 
 const api = supertest(app)
 
@@ -24,9 +25,7 @@ describe('when there is initially some blogs saved', () => {
 
         const idArray = blogs.body.map(blog => blog.id)
 
-        for (const id of idArray) {
-            expect(id).toBeDefined()
-        }
+        idArray.forEach(id => expect(id).toBeDefined() )
     })
     test('deleting a blog works', async () => {
 
@@ -42,7 +41,7 @@ describe('when there is initially some blogs saved', () => {
         expect(blogIds).not.toContainEqual(blogToDelete.id)
     })
 
-    test('updating data of a blog works', async () => {
+    test('updating properties of a blog works', async () => {
 
         const blogs = await api.get('/api/blogs')
         const blogToUpdate = blogs.body[0]
