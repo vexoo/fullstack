@@ -111,14 +111,16 @@ const App = () => {
           <div>
             <p>
               {user.name} logged in -
-              <button style={{ marginLeft: '5px' }}
+              <button id='logout-button' style={{ marginLeft: '5px' }}
                 onClick={() => handleLogout()}>
                 logout</button>
             </p>
             {blogs
               .sort((a, b) => b.likes - a.likes)
               .map(blog =>
-                <Blog key={blog.id} blog={blog} handleLikes={handleLikes} handleRemoval={handleRemoval} username={user.username} />
+                <div key={blog.id} className='blog'>
+                  <Blog blog={blog} handleLikes={handleLikes} handleRemoval={handleRemoval} username={user.username} />
+                </div>
               )}
             <Toggleable buttonLabel="new blog" ref={blogFormRef}>
               <h3>Create a new blog</h3>

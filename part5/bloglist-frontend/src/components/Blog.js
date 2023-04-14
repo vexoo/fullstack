@@ -26,27 +26,27 @@ const Blog = ({ blog, handleLikes, handleRemoval, username }) => {
   }
 
   const removeBlog = () => {
-    if (window.confirm(`Remove blog \'${blog.title}\' by ${blog.author}?`)) {
+    if (window.confirm(`Remove blog '${blog.title}' by ${blog.author}?`)) {
       handleRemoval(blog.id)
     }
   }
 
   return (
-    <div style={blogStyle}>
-      <div>
-        '{blog.title}' by {blog.author}
-        <button style={{ marginLeft: '5px', marginBottom: '2px' }} onClick={toggleDetails}>{showDetails ? 'hide' : 'view'}</button>
+    <div style={blogStyle} className='blog'>
+      <div className='title'>
+        &apos;{blog.title}&apos; by {blog.author}
+        <button id='details' style={{ marginLeft: '5px', marginBottom: '2px' }} onClick={toggleDetails}>{showDetails ? 'hide' : 'view'}</button>
       </div>
       {showDetails && (
-        <div>
+        <div className='blog-details'>
           <div>URL: {blog.url}</div>
           <div>
             likes: {blog.likes}
-            <button style={{ marginLeft: '5px' }} onClick={addLike}>like</button>
+            <button id='addLike' style={{ marginLeft: '5px' }} onClick={addLike}>like</button>
           </div>
           <div>{blog.user.name}</div>
           {blog.user.username === username && (
-            <button style={{ marginTop: '2px' }} onClick={removeBlog}>delete</button>
+            <button id='delete' style={{ marginTop: '2px' }} onClick={removeBlog}>delete</button>
           )}
         </div>
       )}
