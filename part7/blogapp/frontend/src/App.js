@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useContext } from 'react'
+import { useEffect, useRef, useContext } from 'react'
 import BlogList from './components/BlogList'
 import blogService from './services/blogs'
 import BlogForm from './components/BlogForm'
@@ -6,14 +6,9 @@ import LoginForm from './components/LoginForm'
 import Login from './components/Login'
 import Notification from './components/Notification'
 import Toggleable from './components/Toggleable'
-import { useQuery, useMutation, useQueryClient } from 'react-query'
-import { useNotificationDispatch } from './NotificationContext'
-import BlogContext, { useBlogValue, BlogContextProvider } from './BlogContext'
 import { UserContext } from './UserContext'
 
 const App = () => {
-  //const [errorMessage, setErrorMessage] = useState(null)
-  //const [errorColor, setErrorColor] = useState('green')
   const blogFormRef = useRef()
   const { dispatch } = useContext(UserContext)
   const { state } = useContext(UserContext)

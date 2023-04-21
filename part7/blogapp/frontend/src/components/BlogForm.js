@@ -18,19 +18,6 @@ const BlogForm = ({ blogFormRef }) => {
     {
       onSuccess: (data) => {
         queryClient.invalidateQueries('blogs')
-        notify(`New blog '${data.title}' by ${data.author} has been added`)
-        blogFormRef.current.toggleVisibility()
-      },
-      onError: (error) => {
-        const errorMsg = error.response.data.error || error.message
-        notify(errorMsg)
-      }
-    }
-  )
-
-  /*
-	 onSuccess: (data) => {
-        queryClient.invalidateQueries('blogs')
         notify({
           message: `New blog '${data.title}' by ${data.author} has been added`,
           color: 'green'
@@ -41,7 +28,8 @@ const BlogForm = ({ blogFormRef }) => {
         const errorMsg = error.response.data.error || error.message
         notify({ message: errorMsg, color: 'red' })
       }
-			*/
+    }
+  )
 
   const handleInputChange = (event) => {
     const { name, value } = event.target

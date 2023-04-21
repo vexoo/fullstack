@@ -23,8 +23,7 @@ const userReducer = (state, action) => {
   }
 }
 
-const UserContextProvider = ({ props }) => {
-  console.log(props)
+const UserContextProvider = (props) => {
   const [state, dispatch] = useReducer(userReducer, initialState)
 
   return (
