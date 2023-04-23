@@ -1,14 +1,12 @@
-import { useState } from 'react'
+import { useField } from '../hooks/index'
 import { useMutation, useQueryClient } from 'react-query'
 import { useNotificationDispatch } from '../NotificationContext'
 import blogService from '../services/blogs'
 
 const BlogForm = ({ blogFormRef }) => {
-  const [newBlog, setNewBlog] = useState({
-    title: '',
-    author: '',
-    url: ''
-  })
+  const title = useField('text')
+  const author = useField('text')
+  const url = useField('text')
 
   const queryClient = useQueryClient()
   const notify = useNotificationDispatch()
@@ -22,6 +20,9 @@ const BlogForm = ({ blogFormRef }) => {
           message: `New blog '${data.title}' by ${data.author} has been added`,
           color: 'green'
         })
+        title.reset()
+        author.reset()
+        url.reset()
         blogFormRef.current.toggleVisibility()
       },
       onError: (error) => {
@@ -31,19 +32,21 @@ const BlogForm = ({ blogFormRef }) => {
     }
   )
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target
-    setNewBlog({ ...newBlog, [name]: value })
-  }
-
   const handleSubmit = (event) => {
     event.preventDefault()
+    const newBlog = {
+      title: title.value,
+      author: author.value,
+      url: urlFix()
+    }
     newBlogMutation.mutate(newBlog)
-    setNewBlog({
-      title: '',
-      author: '',
-      url: ''
-    })
+  }
+
+  const urlFix = () => {
+    if (!/^https?:\/\//i.test(url.value)) {
+      const newUrl = 'http://' + url.value
+      return newUrl
+    } else return url.value
   }
 
   return (
@@ -52,30 +55,30 @@ const BlogForm = ({ blogFormRef }) => {
         Title:
         <input
           id="title"
-          type="text"
-          value={newBlog.title}
+          type={title.type}
+          value={title.value}
           name="title"
-          onChange={handleInputChange}
+          onChange={title.onChange}
         />
       </div>
       <div>
         Author:
         <input
           id="author"
-          type="text"
-          value={newBlog.author}
+          type={author.type}
+          value={author.value}
           name="author"
-          onChange={handleInputChange}
+          onChange={author.onChange}
         />
       </div>
       <div>
         URL:
         <input
           id="url"
-          type="text"
-          value={newBlog.url}
+          type={url.type}
+          value={url.value}
           name="url"
-          onChange={handleInputChange}
+          onChange={url.onChange}
         />
       </div>
       <button id="createBlog" style={{ marginTop: '10px' }} type="submit">

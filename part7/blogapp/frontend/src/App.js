@@ -1,17 +1,17 @@
-import { useEffect, useRef, useContext } from 'react'
-import BlogList from './components/BlogList'
+import { useEffect, useContext } from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import Blog from './components/Blog'
 import blogService from './services/blogs'
-import BlogForm from './components/BlogForm'
+import BlogsView from './components/BlogsView'
 import LoginForm from './components/LoginForm'
-import Login from './components/Login'
+import NavMenu from './components/NavMenu'
 import Notification from './components/Notification'
-import Toggleable from './components/Toggleable'
+import User from './components/User'
+import UserList from './components/UserList'
 import { UserContext } from './UserContext'
 
 const App = () => {
-  const blogFormRef = useRef()
-  const { dispatch } = useContext(UserContext)
-  const { state } = useContext(UserContext)
+  const { state, dispatch } = useContext(UserContext)
 
   useEffect(() => {
     const loggedUserJson = window.localStorage.getItem('loggedBlogappUser')
@@ -24,19 +24,25 @@ const App = () => {
   }, [])
 
   if (state.user === null) {
-    return <LoginForm />
+    return (
+      <div className="container">
+        <LoginForm />
+      </div>
+    )
   }
 
   return (
-    <div>
-      <h2>Blogs</h2>
-      <Notification />
-      <Login />
-      <BlogList />
-      <Toggleable buttonLabel="new blog" ref={blogFormRef}>
-        <h3>Create a new blog</h3>
-        <BlogForm blogFormRef={blogFormRef} />
-      </Toggleable>
+    <div className="container">
+      <Router>
+        <NavMenu />
+        <Notification />
+        <Routes>
+          <Route path="/users" element={<UserList />} />
+          <Route path="/users/:id" element={<User />} />
+          <Route path="/" element={<BlogsView />} />
+          <Route path="/blogs/:id" element={<Blog />} />
+        </Routes>
+      </Router>
     </div>
   )
 }
