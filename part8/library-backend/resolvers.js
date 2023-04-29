@@ -37,10 +37,6 @@ const resolvers = {
       return context.currentUser
     }
   },
-  /*Author: {
-    bookCount: (root) =>
-      books.filter((book) => book.author === root.name).length
-  },*/
   Author: {
     bookCount: async (root) => {
       return books.filter((book) => String(book.author) === String(root.id))
@@ -49,9 +45,6 @@ const resolvers = {
   },
   Mutation: {
     addBook: async (root, args, context) => {
-      /*if (!context.currentUser) {
-        throw new AuthenticationError('not authenticated')
-      }*/
       const currentUser = context.currentUser
       if (!currentUser) {
         throw new GraphQLError('not authenticated', {
@@ -93,9 +86,6 @@ const resolvers = {
       return book
     },
     editAuthor: async (root, args, context) => {
-      /*if (!context.currentUser) {
-        throw new AuthenticationError('not authenticated')
-      }*/
       const currentUser = context.currentUser
       if (!currentUser) {
         throw new GraphQLError('not authenticated', {

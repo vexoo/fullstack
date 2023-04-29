@@ -1,27 +1,12 @@
 import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
-import Select from 'react-select'
-import { gql, useQuery, useApolloClient, useSubscription } from '@apollo/client'
+import { useQuery, useApolloClient, useSubscription } from '@apollo/client'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import LoginForm from './components/LoginForm'
 import NewBook from './components/NewBook'
 import RecommendForm from './components/RecommendForm'
 import { ALL_AUTHORS, ALL_BOOKS, BOOK_ADDED } from './queries'
-
-export const updateCache = (cache, query, addedBook) => {
-  // helper that is used to eliminate saving same person twice
-  const uniqByName = (a) => {
-    let seen = new Set()
-    return a.filter((item) => {
-      let k = item.name
-      return seen.has(k) ? false : seen.add(k)
-    })
-  }
-  cache.updateQuery(query, ({ allBooks }) => {
-    return { allBooks: uniqByName(allBooks.concat(addedBook)) }
-  })
-}
 
 const App = () => {
   const [token, setToken] = useState(null)
@@ -32,10 +17,11 @@ const App = () => {
 
   useSubscription(BOOK_ADDED, {
     onData: ({ data, client }) => {
-      console.log(data)
       const addedBook = data.data.bookAdded
-
-      updateCache(client.cache, { query: ALL_BOOKS }, addedBook)
+      window.alert('Book added')
+      client.cache.updateQuery({ query: ALL_BOOKS }, ({ allBooks }) => {
+        return { allBooks: allBooks.concat(addedBook) }
+      })
     }
   })
 
@@ -96,11 +82,4 @@ const App = () => {
     </div>
   )
 }
-
-/*
-<Route
-            path='/books'
-            element={<Books books={bookResult.data.allBooks} genres={genres} />}
-          />
-					*/
 export default App

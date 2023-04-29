@@ -1,31 +1,60 @@
-import { useState } from 'react'
-import { useQuery, gql } from '@apollo/client'
+import { useState, useEffect } from 'react'
+import { useQuery, useLazyQuery } from '@apollo/client'
 import { ALL_BOOKS } from '../queries'
-import { updateCache } from '../App'
-import GenreButtons from './GenreButtons'
 
 const Books = () => {
-  const [filter, setFilter] = useState(null)
-
-  const bookResult = useQuery(ALL_BOOKS, {
-    variables: { genre: filter },
+  const bookResult = useQuery(ALL_BOOKS)
+  const [getBooksByGenre, genreResult] = useLazyQuery(ALL_BOOKS, {
+    fetchPolicy: 'no-cache'
   })
+  const [genre, setGenre] = useState('all')
+  const [books, setBooks] = useState(null)
 
-  if (bookResult.loading) return <p>Loading...</p>
-  if (bookResult.error) return <p>Error loading books</p>
+  useEffect(() => {
+    if (bookResult.data) {
+      setBooks(bookResult.data.allBooks)
+    }
+  }, [bookResult.data])
 
-  const books = bookResult.data.allBooks
+  useEffect(() => {
+    if (genreResult.data) {
+      setBooks(genreResult.data.allBooks)
+    }
+  }, [genreResult.data])
+
+  if (!books) {
+    return null
+  }
+
+  if (bookResult.loading || genreResult.loading) {
+    return <div>loading...</div>
+  }
+
+  if (bookResult.error || genreResult.error) {
+    return <div>Error loading from database</div>
+  }
+
+  const { allBooks } = bookResult.data
+
+  const genres = [...new Set(allBooks.flatMap((b) => b.genres))].concat('all')
+
+  const handleGenreChange = (genre) => {
+    setGenre(genre)
+
+    if (genre === 'all') {
+      setBooks(allBooks)
+      return
+    }
+
+    getBooksByGenre({ variables: { genre: genre } })
+  }
 
   return (
     <div>
       <h2>books</h2>
-      {filter ? (
-        <div>
-          in genre <b>{filter}</b>
-        </div>
-      ) : (
-        <div></div>
-      )}
+      <p>
+        in genre <b>{genre}</b>
+      </p>
       <table>
         <tbody>
           <tr>
@@ -43,19 +72,14 @@ const Books = () => {
         </tbody>
       </table>
       <div>
-        <GenreButtons setFilter={setFilter} />
+        {genres.map((genre) => (
+          <button key={genre} onClick={() => handleGenreChange(genre)}>
+            {genre}
+          </button>
+        ))}
       </div>
     </div>
   )
 }
 
 export default Books
-
-/*
-        {genres.map((genre) => (
-          <button key={genre} onClick={() => handleFilterChange(genre)}>
-            {genre}
-          </button>
-        ))}
-        <button onClick={() => handleFilterChange(null)}>all genres</button>
-				*/

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Select from 'react-select'
-import { gql, useQuery, useMutation } from '@apollo/client'
+import { useMutation } from '@apollo/client'
 import { ALL_AUTHORS, UPDATE_BIRTHYEAR } from '../queries'
 
 const Authors = ({ authors }) => {

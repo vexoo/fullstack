@@ -10,7 +10,6 @@ const LoginForm = ({ setToken, setFave }) => {
 
   const [login, result] = useMutation(LOGIN, {
     onError: (error) => {
-      //setError(error.graphQLErrors[0].message)
       console.log(error.graphQLErrors[0].message)
     }
   })
@@ -32,6 +31,8 @@ const LoginForm = ({ setToken, setFave }) => {
       }
     }
   }, [result.data]) // eslint-disable-line
+
+  if (userResult.loading) return null
 
   const submit = async (event) => {
     event.preventDefault()
